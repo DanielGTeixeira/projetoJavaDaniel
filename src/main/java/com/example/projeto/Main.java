@@ -11,11 +11,16 @@ import javafx.stage.Stage;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Main extends Application {
 
     private FuncionarioController controller = new FuncionarioController();
     private ObservableList<Funcionario> funcionarios = FXCollections.observableArrayList();
+    private FuncionarioRelatorioService relatorioService = new FuncionarioRelatorioService();
 
     @Override
     public void start(Stage primaryStage) {
@@ -62,10 +67,8 @@ public class Main extends Application {
 
                 controller.cadastrarFuncionario(matricula, nome, cpf, dataNascimento, cargo, salario, dataContratacao, endereco);
 
-                // Atualiza a tabela
                 funcionarios.setAll(controller.listarFuncionarios());
 
-                // Limpa os campos
                 matriculaField.clear();
                 nomeField.clear();
                 cpfField.clear();
@@ -116,11 +119,79 @@ public class Main extends Application {
         tabela.getColumns().addAll(matriculaCol, nomeCol, cargoCol, salarioCol);
         tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        // Layout final
-        vbox.getChildren().addAll(formGrid, new Label("Funcionários cadastrados:"), tabela);
+        // === Relatórios ===
+        Button cargoButton = new Button("Filtrar por Cargo");
+        cargoButton.setOnAction(e -> {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Filtrar por Cargo");
+            dialog.setHeaderText("Digite o cargo desejado:");
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(cargo -> {
+                List<Funcionario> filtrados = relatorioService.filtrarPorCargo(funcionarios, cargo);
+                showTextDialog("Funcionários com cargo: " + cargo, formatarFuncionarios(filtrados));
+            });
+        });
 
-        primaryStage.setScene(new Scene(vbox, 600, 600));
+        Button faixaSalarioButton = new Button("Filtrar por Faixa Salarial");
+        faixaSalarioButton.setOnAction(e -> {
+            TextInputDialog dialogMin = new TextInputDialog("0");
+            dialogMin.setTitle("Filtrar por Faixa Salarial");
+            dialogMin.setHeaderText("Digite o salário mínimo:");
+            Optional<String> minResult = dialogMin.showAndWait();
+
+            TextInputDialog dialogMax = new TextInputDialog("10000");
+            dialogMax.setTitle("Filtrar por Faixa Salarial");
+            dialogMax.setHeaderText("Digite o salário máximo:");
+            Optional<String> maxResult = dialogMax.showAndWait();
+
+            if (minResult.isPresent() && maxResult.isPresent()) {
+                BigDecimal min = new BigDecimal(minResult.get());
+                BigDecimal max = new BigDecimal(maxResult.get());
+                List<Funcionario> filtrados = relatorioService.filtrarPorFaixaSalarial(funcionarios, min, max);
+                showTextDialog("Funcionários entre " + min + " e " + max, formatarFuncionarios(filtrados));
+            }
+        });
+
+        Button mediaSalarialButton = new Button("Média Salarial por Cargo");
+        mediaSalarialButton.setOnAction(e -> {
+            Map<String, Double> medias = relatorioService.mediaSalarialPorCargo(funcionarios);
+            StringBuilder sb = new StringBuilder();
+            medias.forEach((cargo, media) -> sb.append(cargo).append(": R$ ").append(String.format("%.2f", media)).append("\n"));
+            showTextDialog("Média Salarial por Cargo", sb.toString());
+        });
+
+        Button porCidadeButton = new Button("Agrupar por Cidade");
+        porCidadeButton.setOnAction(e -> {
+            Map<String, List<Funcionario>> mapa = relatorioService.agruparPorCidade(funcionarios);
+            StringBuilder sb = new StringBuilder();
+            mapa.forEach((cidade, list) -> {
+                sb.append(cidade).append(": ").append(list.size()).append(" funcionário(s)\n");
+            });
+            showTextDialog("Funcionários por Cidade", sb.toString());
+        });
+
+        Button porEstadoButton = new Button("Agrupar por Estado");
+        porEstadoButton.setOnAction(e -> {
+            Map<String, List<Funcionario>> mapa = relatorioService.agruparPorEstado(funcionarios);
+            StringBuilder sb = new StringBuilder();
+            mapa.forEach((estado, list) -> {
+                sb.append(estado).append(": ").append(list.size()).append(" funcionário(s)\n");
+            });
+            showTextDialog("Funcionários por Estado", sb.toString());
+        });
+
+        HBox relatorioButtons = new HBox(10, cargoButton, faixaSalarioButton, mediaSalarialButton, porCidadeButton, porEstadoButton);
+
+        vbox.getChildren().addAll(formGrid, new Label("Funcionários cadastrados:"), tabela, new Label("Relatórios:"), relatorioButtons);
+
+        primaryStage.setScene(new Scene(vbox, 800, 700));
         primaryStage.show();
+    }
+
+    private String formatarFuncionarios(List<Funcionario> funcionarios) {
+        return funcionarios.stream()
+                .map(Funcionario::toString)
+                .collect(Collectors.joining("\n"));
     }
 
     private void showAlert(String title, String message) {
@@ -128,6 +199,19 @@ public class Main extends Application {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showTextDialog(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+
+        TextArea textArea = new TextArea(content);
+        textArea.setWrapText(true);
+        textArea.setEditable(false);
+        alert.getDialogPane().setContent(textArea);
+
         alert.showAndWait();
     }
 

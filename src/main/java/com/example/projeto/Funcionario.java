@@ -56,4 +56,16 @@ public class Funcionario implements Serializable {
     public Endereco getEndereco() {
         return endereco;
     }
+
+    public String toString() {
+        return "Matrícula: " + matricula + "\n" +
+                "Nome: " + nome + "\n" +
+                "CPF: " + cpf + "\n" +
+                "Nascimento: " + dataNascimento + "\n" +
+                "Cargo: " + cargo + "\n" +
+                "Salário: R$" + salario + "\n" +
+                "Contratação: " + dataContratacao + "\n" +
+                "Cidade: " + endereco.getCidade() + "\n" +
+                "Estado: " + endereco.getEstado();
+    }
 }
