@@ -1,9 +1,8 @@
-package com.example.projeto;
+package com.projeto;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-import java.util.stream.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

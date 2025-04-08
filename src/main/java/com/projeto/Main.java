@@ -1,4 +1,4 @@
-package com.example.projeto;
+package com.projeto;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;
@@ -51,6 +51,12 @@ public class Main extends Application {
         DatePicker dataContratacaoPicker = new DatePicker();
         dataContratacaoPicker.setPromptText("Data de Contratação");
 
+        TextField cidadeField = new TextField();
+        cidadeField.setPromptText("Cidade");
+
+        TextField estadoField = new TextField();
+        estadoField.setPromptText("Estado");
+
         Button cadastrarButton = new Button("Cadastrar Funcionário");
 
         cadastrarButton.setOnAction(e -> {
@@ -63,7 +69,8 @@ public class Main extends Application {
                 BigDecimal salario = new BigDecimal(salarioField.getText());
                 LocalDate dataContratacao = dataContratacaoPicker.getValue();
 
-                Endereco endereco = new Endereco("Rua A", "123", "", "Centro", "Cidade", "Estado", "12345678");
+                Endereco endereco = new Endereco("Rua A", "123", "", "Centro", cidadeField.getText(), estadoField.getText(), "");
+
 
                 controller.cadastrarFuncionario(matricula, nome, cpf, dataNascimento, cargo, salario, dataContratacao, endereco);
 
@@ -74,6 +81,8 @@ public class Main extends Application {
                 cpfField.clear();
                 cargoField.clear();
                 salarioField.clear();
+                cidadeField.clear();
+                estadoField.clear();
                 dataNascimentoPicker.setValue(null);
                 dataContratacaoPicker.setValue(null);
             } catch (Exception ex) {
@@ -98,8 +107,12 @@ public class Main extends Application {
         formGrid.add(new Label("Salário:"), 0, 5);
         formGrid.add(salarioField, 1, 5);
         formGrid.add(new Label("Contratação:"), 0, 6);
+        formGrid.add(new Label("Cidade:"), 0, 7);
+        formGrid.add(cidadeField, 1, 7);
+        formGrid.add(new Label("Estado:"), 0, 8);
+        formGrid.add(estadoField, 1, 8);
         formGrid.add(dataContratacaoPicker, 1, 6);
-        formGrid.add(cadastrarButton, 1, 7);
+        formGrid.add(cadastrarButton, 1, 9);
 
         // === Tabela de funcionários ===
         TableView<Funcionario> tabela = new TableView<>(funcionarios);
@@ -116,7 +129,13 @@ public class Main extends Application {
         TableColumn<Funcionario, String> salarioCol = new TableColumn<>("Salário");
         salarioCol.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getSalario().toString()));
 
-        tabela.getColumns().addAll(matriculaCol, nomeCol, cargoCol, salarioCol);
+        TableColumn<Funcionario, String> cidadeCol = new TableColumn<>("Cidade");
+        cidadeCol.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getEndereco().getCidade()));
+
+        TableColumn<Funcionario, String> estadoCol = new TableColumn<>("Estado");
+        estadoCol.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getEndereco().getEstado()));
+
+        tabela.getColumns().addAll(matriculaCol, nomeCol, cargoCol, salarioCol, cidadeCol, estadoCol);
         tabela.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         // === Relatórios ===

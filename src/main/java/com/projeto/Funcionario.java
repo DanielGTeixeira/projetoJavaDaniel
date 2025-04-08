@@ -1,4 +1,4 @@
-package com.example.projeto;
+package com.projeto;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -66,6 +66,6 @@ public class Funcionario implements Serializable {
                 "Salário: R$" + salario + "\n" +
                 "Contratação: " + dataContratacao + "\n" +
                 "Cidade: " + endereco.getCidade() + "\n" +
-                "Estado: " + endereco.getEstado();
+                "Estado: " + endereco.getEstado() + "\n\n";
     }
 }

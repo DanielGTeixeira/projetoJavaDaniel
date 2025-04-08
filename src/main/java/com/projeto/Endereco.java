@@ -1,4 +1,4 @@
-package com.example.projeto;
+package com.projeto;
 import java.io.Serializable;
 
 public class Endereco implements Serializable {
